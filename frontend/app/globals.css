@@ -83,3 +83,15 @@ h2 { margin: 0; font-size: 1.05rem; }
   .container { padding: 20px 16px; }
   .detail { grid-template-columns: 1fr; }
 }
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.stat {
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  padding: 14px 16px;
+}
+.stat-value { font-size: 1.5rem; font-weight: 600; margin-top: 4px; }

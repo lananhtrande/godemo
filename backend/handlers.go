@@ -18,6 +18,7 @@ func (a *API) routes() http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", a.health)
 	mux.HandleFunc("GET /api/v1/sites", a.listSites)
+	mux.HandleFunc("GET /api/v1/summary", a.getSummary)
 	mux.HandleFunc("GET /api/v1/sites/{id}", a.getSite)
 	mux.HandleFunc("GET /api/v1/sites/{id}/stream", a.streamSite)
 	return a.cors(logRequests(mux))
@@ -29,6 +30,10 @@ func (a *API) health(w http.ResponseWriter, r *http.Request) {
 
 func (a *API) listSites(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusOK, a.store.List())
+}
+
+func (a *API) getSummary(w http.ResponseWriter, r *http.Request) {
+	writeJSON(w, http.StatusOK, a.store.Summarize())
 }
 
 func (a *API) getSite(w http.ResponseWriter, r *http.Request) {

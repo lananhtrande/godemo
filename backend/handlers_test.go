@@ -126,3 +126,34 @@ func TestUnsubscribeRemovesSubscriber(t *testing.T) {
 		t.Fatalf("subscribers = %d, want 0", n)
 	}
 }
+
+func TestSummary(t *testing.T) {
+	srv := httptest.NewServer((&API{store: testStore(), allowedOrigin: "*"}).routes())
+	defer srv.Close()
+
+	res, err := http.Get(srv.URL + "/api/v1/summary")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer res.Body.Close()
+	if res.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", res.StatusCode)
+	}
+
+	var got Summary
+	if err := json.NewDecoder(res.Body).Decode(&got); err != nil {
+		t.Fatal(err)
+	}
+	want := Summary{SiteCount: 2, AverageSoC: 50, ChargingCount: 1, DischargingCount: 1}
+	if got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+}
+
+// An empty store must not divide by zero.
+func TestSummarizeEmptyStore(t *testing.T) {
+	got := NewStore(nil).Summarize()
+	if got != (Summary{}) {
+		t.Fatalf("got %+v, want all zeros", got)
+	}
+}

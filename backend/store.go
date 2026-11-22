@@ -64,6 +64,42 @@ func (s *Store) Get(id string) (Site, bool) {
 	return *site, true
 }
 
+// Summary is an aggregated view of all sites, used for the dashboard.
+type Summary struct {
+	SiteCount int	 `json:"siteCount"`
+	TotalPowerMW float64 `json:"totalPowerMW"`
+	AverageSoC float64 `json:"averageSoC"`
+	ChargingCount int `json:"chargingCount"`
+	DischargingCount int `json:"dischargingCount"`
+	IdleCount int `json:"idleCount"`
+}
+
+// Summarize calculates totals over all sites.
+func (s *Store) Summarize() Summary {
+	s.mu.RLock()
+	defer s.mu.RUnlock()
+	var sum Summary
+	var totalSoc float64
+	for _, site := range s.sites {
+		sum.SiteCount++
+		sum.TotalPowerMW += site.PowerMW
+		totalSoc += site.SoC
+		switch site.Status {
+		case "charging":
+			sum.ChargingCount++
+		case "discharging":
+			sum.DischargingCount++
+		case "idle":
+			sum.IdleCount++
+		}
+	}
+	if sum.SiteCount > 0 {
+		sum.AverageSoC = round(totalSoc/float64(sum.SiteCount), 1)
+	}
+	sum.TotalPowerMW = round(sum.TotalPowerMW, 1)
+	return sum
+}
+
 // Subscribe registers a channel that receives every update of one site.
 // The returned function must be called to unsubscribe (e.g. when the client disconnects).
 func (s *Store) Subscribe(id string) (<-chan Site, func()) {

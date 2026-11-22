@@ -35,3 +35,21 @@ export async function getSite(id: string): Promise<Site | null> {
   if (!res.ok) throw new Error(`Failed to load site ${id}: ${res.status}`);
   return res.json();
 }
+
+// Same shape as the Go struct `Summary` (backend/store.go).
+export interface Summary {
+  siteCount: number;
+  totalPowerMW: number;
+  averageSoC: number;
+  chargingCount: number;
+  dischargingCount: number;
+  idleCount: number;
+}
+
+export async function getSummary(): Promise<Summary> {
+  const res = await fetch(`${SERVER_API_URL}/api/v1/summary`, {
+    cache: "no-store",
+  });
+  if (!res.ok) throw new Error(`Failed to load summary: ${res.status}`);
+  return res.json();
+}
